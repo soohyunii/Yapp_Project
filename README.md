@@ -1,7 +1,7 @@
 # yapp_project web project
 - 프로젝트에 contribute 하기위해서 project owner 가 contributor 로 추가해줘야한다.
 - 추가하려는 email 은 개인 profile > setting 에서 email 을 공개해줘야한다.
-- contributor 가 되기 위해서 Angel-Study/webProject repository 를 fork 해야한다.
+- contributor 가 되기 위해서 kgh940525/Yapp_Project repository 를 fork 해야한다.
 
 
 ## git config
@@ -23,8 +23,8 @@ $ git config --global user.email {email}
 $ git clone git@github.com:Angel-Study/webProject.git
 ```
 5. 프로젝트의 push url 설정 
-- 프로젝트 push 는 fork 된 프로젝트로 (ex) eunjeongsong/webProject
-- merge request 는 본 프로젝트로 (ex) Angel-study/webProject
+- 프로젝트 push 는 fork 된 프로젝트로 (ex) kgh940525/webProject
+- merge request 는 본 프로젝트로 (ex) kgh940525/webProject
 ```
 $ git remote set-url --push origin git@github.com:eunjeongsong/webProject.git
 ```
