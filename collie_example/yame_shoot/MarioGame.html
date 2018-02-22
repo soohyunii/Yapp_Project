@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+  <title>Collie</title>
+<style type="text/css">
+* {margin:0;padding:0;line-height:1;} /* reset */
+html,body {width:100%;height:100%;background-color:#aaa;}
+#container {position:absolute;}
+</style>
+</head>
+<body>
+  <div id="container" class="container"></div><script type="text/javascript" src="collie.min.js">
+</script><script type="text/javascript" src="collie.tool.min.js">
+</script><script type="text/javascript" src="box2d-web-2.1.a.3.js">
+</script><script type="text/javascript" src="collie.Box2d.js">
+</script><script type="text/javascript">
+	var box2d;
+	collie.util.addEventListener(window, "load", function () {
+		oConsole = new collie.FPSConsole({
+			isSimple : true,
+			color : "#fff"
+		});
+		var htParams = collie.util.queryString();
+		var htSize = {
+			width : document.body.clientWidth,
+			height : document.body.clientHeight
+		};
+		collie.Renderer.DEBUG_RENDERING_MODE = typeof htParams.dom != "undefined" ? "dom" : (typeof htParams.canvas != "undefined" ? "canvas" : "auto");
+		collie.Renderer.RETINA_DISPLAY = false;
+		collie.ImageManager.add("yame", "yame_bidirectional.png");
+		collie.ImageManager.addSprite("yame", {
+			faceright : [0, 0, 129.4, 165, 8], // x, y, width, height, spriteLength
+			faceleft : [0, 165, 129.4, 165, 8]
+		});
+
+		var layer = new collie.Layer({
+			width : htSize.width,
+			height : htSize.height
+		});
+		box2d = new collie.Box2d(htSize.width, htSize.height, 30);
+		box2d.addFixture("rabbit", {
+			density : 1.0,
+			friction : 0.5,
+			restitution : 0
+		});
+		box2d.addFixture("none", {
+			density : 1.0,
+			friction : 0,
+			restitution : 0
+		});
+		box2d.addFixture("bullet", {
+			density : 0,
+			friction : 0,
+			restitution : 0,
+			bullet: true
+		});
+		
+		box2d.addFixture("ground", {
+			density : 1.0,
+			friction : 0.5,
+			restitution : 0.2
+		});
+		box2d.createWall("right");
+		box2d.createWall("left");
+		box2d.createWall("top");
+		box2d.createWall("bottom");
+		
+		var box = new collie.DisplayObject({
+			x: "center",
+			y: "bottom",
+			width: 100,
+			height: 100,
+			backgroundColor: "green"
+		}).addTo(layer);
+		 
+		var rabbit;
+		var body, box1;
+		var player;
+		rabbit = new collie.DisplayObject({
+			width : 129.4,
+			height : 165,
+//			x : Math.random() * (htSize.width - 129.4) | 0,
+//			y : Math.random() * (htSize.height - 165) | 0,
+			x : 50,
+			y : "bottom",
+			useEvent : true,
+			backgroundImage : "yame",
+			spriteSheet: "faceright"
+//			hitArea : [[48, 51],[46, 13],[54, 14],[56, 45],[70, 45],[70, 16],[79, 16],[79, 52],[81, 131],[81, 140],[69, 141],[66, 117],[65, 142],[53, 144],[52, 111],[45, 97],[44, 74]]
+		}).addTo(layer);
+		var rTimer = collie.Timer.cycle(rabbit, "30fps", {
+			to: 8
+		});
+		rTimer.stop();
+		
+		body = box2d.createObject(rabbit, {
+			width : 50,
+			height : 130
+		}, "rabbit");
+		box1 = box2d.createObject(box, {
+			width : 100,
+			height : 100,
+			type: "static"
+		}, "rabbit");
+		player = body;
+		player.SetFixedRotation(true);
+		var htKeyPressed = {
+			left : false,
+			right : false
+		};
+		collie.util.addEventListener(document.body, "click", function (e) {
+			alert("jere");
+			switch (e.keyCode) {
+				case 40 : //down
+					direc = rabbit.get("spriteSheet");
+					var fire = new collie.MovableObject({
+						x: 0,
+						y: htSize.height - 80,
+						velocityX: 20,
+						velocityY: 20,
+						width: 10,
+						height: 4,
+						mass: 0,
+						backgroundColor: "red"
+					}).addTo(layer);
+					/*
+					var fire1 = box2d.createObject(fire, {
+						width : 10,
+						height : 4
+					}, "none");
+					fire1.ApplyImpulse(collie.Box2d.vec2(velocity.x, -15), fire1.GetWorldCenter());
+*/
+//					alert(direc);
+//					var velocity = player.GetLinearVelocity();
+//					player.SetLinearVelocity(collie.Box2d.vec2(velocity.x, -15), player.GetWorldCenter());
+					break;
+				}
+		});
+		collie.util.addEventListener(document.body, "keydown", function (e) {
+			player.SetAwake(true);
+			switch (e.keyCode) {
+				case 39 : //right
+					htKeyPressed.right = true;
+					rabbit.set("spriteSheet","faceright");
+					rTimer.start();
+					break;
+				case 37 : //left
+					htKeyPressed.left = true;
+					rabbit.set("spriteSheet","faceleft");
+					rTimer.start();
+					break;
+				case 38 : //top
+					var velocity = player.GetLinearVelocity();
+					player.SetLinearVelocity(collie.Box2d.vec2(velocity.x, -15), player.GetWorldCenter());
+					break;
+				case 40:
+					direc = rabbit.get("spriteSheet");
+					var d = -1;
+					if(direc == 'faceright') d = 1;
+					var rx = rabbit.get ( "x" );
+					var ry = rabbit.get ( "y" );
+					var rw = rabbit.get("width");
+					var rh = rabbit.get("height");
+					var fire = new collie.DisplayObject({
+						x: rx+d*(rw/2),
+						y: ry+(rh/2),
+						width: 10,
+						height: 4,
+						mass: 1,
+						backgroundColor: "red"
+					}).addTo(layer);
+
+					
+					var fire1 = box2d.createObject(fire, {
+						width : 10,
+						height : 4,
+						type: "dynamic"
+					}, "bullet");
+//					fire1.set("gravity", -100);
+					fire1.SetLinearVelocity(collie.Box2d.vec2(d*20, 0), fire1.GetWorldCenter());
+					break;
+			}
+		});
+		collie.util.addEventListener(document.body, "keyup", function (e) {
+			var velocity = player.GetLinearVelocity();
+			rTimer.stop();
+
+			switch (e.keyCode) {
+				case 39 : //right
+					htKeyPressed.right = false;
+					player.SetLinearVelocity(collie.Box2d.vec2(0, velocity.y));
+					break;
+				case 37 : //left
+					htKeyPressed.left = false;
+					player.SetLinearVelocity(collie.Box2d.vec2(0, velocity.y));
+					break;
+			}
+		});
+		oConsole.load();
+		collie.Renderer.addLayer(layer);
+		collie.Renderer.load(document.getElementById("container"));
+		collie.Renderer.start("60fps", function () {
+			var velocity = player.GetLinearVelocity();
+			if (htKeyPressed.left) {
+				player.SetLinearVelocity(collie.Box2d.vec2(-10, velocity.y));
+			}
+			if (htKeyPressed.right) {
+				player.SetLinearVelocity(collie.Box2d.vec2(10, velocity.y));
+			}
+//			fire1.SetLinearVelocity(collie.Box2d.vec2(velocity.x, -15), fire1.GetWorldCenter());
+		});
+		box2d.load(false);
+	});
+</script>
+</body>
+</html>

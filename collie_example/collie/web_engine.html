@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+<script type="text/javascript" src="http://jindo.dev.naver.com/collie/deploy/collie.min.js"></script>
+<script type="text/javascript" src="http://jindo.dev.naver.com/collie/deploy/collie.addon.min.js"></script>
+<script type="text/javascript" src="collie.tool.min.js"></script>
+<script type="text/javascript" src="box2d-web-2.1.a.3.js"></script>
+<script type="text/javascript" src="collie.Box2d.js"></script>
+<div id="container" class="container"></div>
+<div id="scene" class="scene">hello world</div>
+<script type="text/javascript">
+
+    // retina_display 고화질 이미지 옵션
+    collie.Renderer.RETINA_DISPLAY = "auto";
+    var folder = collie.Renderer.isRetinaDisplay() ? "large" : "small";
+
+    var layer = new collie.Layer({
+        width : 1200,
+        height : 600
+    });
+
+    collie.ImageManager.addImages({
+        "ground" : "http://jindo.dev.naver.com/collie/img/" + folder + "/ground.png",
+        "sky" : "http://jindo.dev.naver.com/collie/img/" + folder + "/sky.png",
+        "yame" : "http://jindo.dev.naver.com/collie/img/" + folder + "/yame_walk.png"
+    });
+
+    var oBackground = new collie.DisplayObject({
+        x : 0,
+        y : 0,
+        width : 1200,
+        height : 600,
+        backgroundRepeat : "repeat", // Repeat X-Axis
+        backgroundImage : "sky",
+        visible : true
+    }).addTo(layer);
+
+    var oGround = new collie.DisplayObject({
+        x : 0,
+        width : 1400, // Using Double width for continuously horizontal move.
+        height : 88,
+        velocityX : -80,
+        backgroundRepeat : "repeat-x", // Repeat X-Axis
+        rangeX : [-200, 0], // This object can move from first position to second position.
+        positionRepeat : true, // This object move the other side when It's on one end of the edge.
+        backgroundImage : "ground"
+    }).bottom(0).addTo(layer);
+
+    var oAvatar = new collie.DisplayObject({
+        x : 550,
+        y : 400,
+        width : 129.4,
+        height : 165,
+        backgroundImage : "yame"
+    }).addTo(layer);
+
+    var currentY = oAvatar.get("y");
+
+    oAvatar.attach({
+        click: function (e) {
+            collie.Timer.queue().
+            transition(oAvatar, 400, {
+                to: currentY - 100,
+                effect: collie.Effect.easeOut,
+                set: "y"
+            }).
+            transition(oAvatar, 400, {
+                to: currentY,
+                effect: collie.Effect.easeIn,
+                set: "y"
+            });
+        }
+    });
+
+    var oAvatar2 = new collie.DisplayObject({
+        x : 550,
+        y : 160,
+        width : 129.4,
+        height : 165,
+        backgroundImage : "yame",
+        //velocityRotate : 200
+    }).addTo(layer);
+
+    var currentX2 = oAvatar2.get("x");
+    var currentY2 = oAvatar2.get("y");
+
+    oAvatar2.attach({
+        click: function (e) {
+            collie.Timer.queue().
+            transition(oAvatar2, 400, {
+                to: currentX2 + 100,
+                effect: collie.Effect.easeOut,
+                set: "x"
+            }).
+            transition(oAvatar2, 400, {
+                to: currentX2,
+                effect: collie.Effect.easeOut,
+                set: "x"
+            }).
+            transition(oAvatar2, 400, {
+                to: currentY2 - 100,
+                effect: collie.Effect.easeOut,
+                set: "y"
+            }).
+            transition(oAvatar2, 400, {
+                to: currentY2,
+                effect: collie.Effect.easeIn,
+                set: "y"
+            }).
+            transition(oAvatar2, 400, {
+                to: currentX2 - 100,
+                effect: collie.Effect.easeOut,
+                set: "x"
+            }).
+            transition(oAvatar2, 400, {
+                to: currentX2,
+                effect: collie.Effect.easeIn,
+                set: "x"
+            });
+        }
+    });
+
+    var oAvatar3 = new collie.DisplayObject({
+        x : 510,
+        y : 400,
+        width : 129.4,
+        height : 165,
+        backgroundImage : "yame"
+    }).addTo(layer);
+
+    var currentY3 = oAvatar3.get("y");
+
+    oAvatar3.attach({
+        click: function (e) {
+            collie.Timer.queue().
+            transition(oAvatar3, 400, {
+                to: currentY3 - 100,
+                effect: collie.Effect.easeOut,
+                set: "y"
+            }).
+            transition(oAvatar3, 400, {
+                to: currentY3,
+                effect: collie.Effect.easeIn,
+                set: "y"
+            });
+        }
+    });
+
+    collie.Timer.cycle(oAvatar, "18fps", {
+        from : 0,
+        to : 8,
+        loop : 0
+    });
+
+    collie.Timer.cycle(oAvatar2, "18fps", {
+        from : 0,
+        to : 8,
+        loop : 0
+    });
+
+    collie.Timer.cycle(oAvatar3, "50fps", {
+        from : 0,
+        to : 1200,
+        step : 50,
+        set : "x"
+    });
+
+    var tileSize = 20;
+    var tileCount = 20;
+    var angle = 0;
+    var rad = 0;
+    var radius = 120;
+    var centerX = 150;
+    var centerY = 150;
+    var tile;
+
+    // Create a sensor instance
+    var sensor = new collie.Sensor({
+        frequency : 0
+    });
+
+    // Add tiles
+    for (var i = 0; i < tileCount; i++) {
+        angle = (360 / tileCount) * i;
+        rad = collie.util.toRad(angle);
+
+        tile = new collie.DisplayObject({
+            x : centerX + Math.cos(rad) * radius,
+            y : centerY + Math.sin(rad) * radius,
+            width : tileSize,
+            height : tileSize,
+            backgroundColor : "gray",
+            angle : angle
+        }).addTo(layer);
+
+        sensor.add(tile, "all");
+    }
+
+    // Add an object
+    var box = new collie.DisplayObject({
+        x : centerX,
+        y : centerY,
+        width : tileSize,
+        height : tileSize,
+        backgroundColor : "blue"
+    }).addTo(layer);
+
+    sensor.addListener(box, "all", function (a, b) {
+        b.set("backgroundColor", "red");
+    }, function (a, b) {
+        b.set("backgroundColor", "gray");
+    });
+
+    // Set a timer
+    collie.Timer.transition(function (e) {
+        var rad = collie.util.toRad(e.value);
+        box.set({
+            x : centerX + Math.cos(rad) * radius,
+            y : centerY + Math.sin(rad) * radius,
+            angle : e.value
+        });
+    }, 360 * 100, {
+        from : 0,
+        to : 360,
+        loop : 0
+    });
+
+    // Start the sensor
+    sensor.start();
+
+    collie.Renderer.addLayer(layer);
+    collie.Renderer.load(document.getElementById("container"));
+    collie.Renderer.start();
+
+    /*function foreground_images_changed(imageURL)
+    {
+        tmp_image = new Image();
+        tmp_image.onload = function() {
+            collie.ImageManager.getImage("foreground_custom").src = tmp_image.src;
+        };
+        tmp_image.src = imageURL;
+        change_foreground_texture("foreground_custom");
+    }*/
+
+</script>
+</body>
+</html>

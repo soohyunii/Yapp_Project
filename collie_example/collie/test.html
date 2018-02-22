@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+<script type="text/javascript" src="http://jindo.dev.naver.com/collie/deploy/collie.min.js"></script>
+<div id="container" class="container"></div>
+<script type="text/javascript">
+
+    collie.ImageManager.addImages({
+        "bird_walk" : "http://jindo.dev.naver.com/collie/img/small/bird_walk.png",
+        "bird_jump" : "http://jindo.dev.naver.com/collie/img/small/bird_jump.png",
+        "ground" : "http://jindo.dev.naver.com/collie/img/small/ground.png"
+    });
+
+    var layer = new collie.Layer({
+        width : 300,
+        height : 300
+    }).attach({
+        click : function () {
+            if (!oTimerJump.isPlaying()) {
+                oTimer.stop();
+                oTimerJump.start();
+            }
+        }
+    });
+
+    var oGround = new collie.DisplayObject({
+        x : 0,
+        y : "bottom",
+        width : 320 * 2, // Using Double width for continuously horizontal move.
+        height : 88,
+        velocityX : -80,
+        backgroundRepeat : "repeat-x", // Repeat X-Axis
+        rangeX : [-320, 0], // This object can move from first position to second position.
+        positionRepeat : true, // This object move the other side when It's on one end of the edge.
+        backgroundImage : "ground"
+    }).addTo(layer);
+
+    var oAvatar = new collie.DisplayObject({
+        x : 50,
+        y : 80,
+        width : 70,
+        height : 150
+    }).addTo(layer);
+
+    var oAvatarWalk = new collie.DisplayObject({
+        x : 0,
+        y : 0,
+        width : 70,
+        height : 150,
+        backgroundImage : "bird_walk"
+    }).addTo(oAvatar);
+
+    var oAvatarJump = new collie.DisplayObject({
+        width : 70,
+        height : 150,
+        spriteLength : 17,
+        backgroundImage : "bird_jump",
+        visible : false
+    }).addTo(oAvatar);
+
+    var oTimer = collie.Timer.cycle(oAvatarWalk, "20fps", {
+        to : 9,
+        loop : 0,
+        onStart : function () {
+            oAvatarWalk.set("visible", true);
+            oAvatarJump.set("visible", false);
+        }
+    });
+
+    var oTimerJump = collie.Timer.cycle(oAvatarJump, "17fps", {
+        from : 0,
+        to : 16,
+        loop : 1,
+        useAutoStart : false,
+        onStart : function () {
+            oAvatarWalk.set("visible", false);
+            oAvatarJump.set("visible", true);
+        },
+        onComplete : function () {
+            oTimer.start();
+        }
+    });
+
+    collie.Renderer.addLayer(layer);
+    collie.Renderer.load(document.getElementById("container"));
+    collie.Renderer.start();
+
+</script>
+</body>
+</html>
